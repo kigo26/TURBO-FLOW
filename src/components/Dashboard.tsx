@@ -7,8 +7,10 @@ import ScreenScanner from './ScreenScanner';
 import { useGameState } from '../GameStateContext';
 import AIStrategyAdvisor from './AIStrategyAdvisor';
 import StreakTracker from './StreakTracker';
+import StreakChart from './StreakChart';
 import QuickActionMenu from './QuickActionMenu';
 import ComparisonWidget from './ComparisonWidget';
+import BankrollGoalProgress from './BankrollGoalProgress';
 
 export default function Dashboard() {
   const { gameState, setGameState } = useGameState();
@@ -19,6 +21,17 @@ export default function Dashboard() {
       viewMode: gameState.viewMode === 'detailed' ? 'compact' : 'detailed'
     });
   };
+
+  const calculateStdDev = (data: number[]) => {
+    if (data.length === 0) return 0;
+    const n = data.length;
+    const mean = data.reduce((a, b) => a + b, 0) / n;
+    return Math.sqrt(data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n);
+  };
+
+  const stdDev = calculateStdDev(gameState.recentBetOutcomes);
+  const borderColor = stdDev < 10 ? 'border-emerald-500' : stdDev < 50 ? 'border-amber-500' : 'border-red-500';
+  const isHighRisk = stdDev >= 50;
 
   return (
     <div className="grid grid-cols-12 gap-3 p-4">
@@ -49,8 +62,9 @@ export default function Dashboard() {
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Spins</h2>
         <div className="text-xl font-mono font-bold text-white mt-1">{gameState.spins}</div>
       </div>
-      <div className={`col-span-12 ${gameState.viewMode === 'detailed' ? 'lg:col-span-8' : 'lg:col-span-12'} border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg`}>
-        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Bankroll Trend</h2>
+      <BankrollGoalProgress />
+      <div className={`col-span-12 ${gameState.viewMode === 'detailed' ? 'lg:col-span-8' : 'lg:col-span-12'} border ${borderColor} ${isHighRisk ? 'animate-pulse' : ''} bg-[#0A0B14] p-4 rounded-lg`}>
+        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Bankroll Trend (Volatility-Adjusted)</h2>
         <SessionPlot />
       </div>
       
@@ -63,6 +77,7 @@ export default function Dashboard() {
           {gameState.isScreenScannerVisible && <ScreenScanner />}
           <AIStrategyAdvisor />
           <StreakTracker />
+          <StreakChart />
           <ComparisonWidget />
         </div>
       )}

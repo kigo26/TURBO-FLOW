@@ -20,7 +20,9 @@ const initialState: GameState = {
     }
   },
   viewMode: 'detailed',
-  isScreenScannerVisible: true
+  isScreenScannerVisible: true,
+  recentBetOutcomes: [],
+  targetBankrollGoal: 10000
 };
 
 const GameStateContext = createContext<{

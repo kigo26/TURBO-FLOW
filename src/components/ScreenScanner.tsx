@@ -38,7 +38,7 @@ export default function ScreenScanner() {
     const [header, base64Data] = dataUrl.split(',');
     const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
     
-    let nextScanDelay = 60000;
+    let nextScanDelay = 300000; // 5 minutes default
     
     try {
       const response = await fetch('/api/ai/analyze-screenshot', {
@@ -53,18 +53,25 @@ export default function ScreenScanner() {
       
       if (response.status === 429) {
         console.warn("Rate limited, backing off...");
-        nextScanDelay = 300000; // 5 minute backoff
+        nextScanDelay = 600000; // 10 minute backoff
       } else if (response.ok) {
         const data = await response.json();
         const parsedData = JSON.parse(data.text.replace(/```json/g, '').replace(/```/g, ''));
-        setGameState({ ...parsedData, userSettings: gameState.userSettings }); // Merge with existing settings
+        
+        const lastBankroll = parseFloat(gameState.bankroll.replace(/[$,]/g, ''));
+        const newBankroll = parseFloat(parsedData.bankroll.replace(/[$,]/g, ''));
+        const outcome = newBankroll - lastBankroll;
+        
+        const newOutcomes = [...gameState.recentBetOutcomes, outcome].slice(-20); // Keep last 20
+        
+        setGameState({ ...parsedData, ...gameState, recentBetOutcomes: newOutcomes }); // Merge, preserve settings
       } else {
         console.error("Failed to analyze screenshot", await response.text());
       }
     } catch (e) {
       console.error(e);
     }
-
+    
     if (streamRef.current?.active) setTimeout(scanFrame, nextScanDelay);
   };
 

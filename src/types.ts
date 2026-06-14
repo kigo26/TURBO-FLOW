@@ -56,4 +56,6 @@ export interface GameState {
   userSettings: UserSettings;
   viewMode: 'compact' | 'detailed';
   isScreenScannerVisible: boolean;
+  recentBetOutcomes: number[];
+  targetBankrollGoal: number;
 }

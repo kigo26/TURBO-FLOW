@@ -46,10 +46,10 @@ export default function AIStrategyAdvisor() {
       }
     };
 
-    const timer = setInterval(fetchAdvice, 60000);
+    const interval = setInterval(fetchAdvice, 15 * 60 * 1000); // 15 minutes
     fetchAdvice();
-    return () => clearInterval(timer);
-  }, [gameState.bankroll, gameState.sessionPL, gameState.currentStreak]);
+    return () => clearInterval(interval);
+  }, []); // Run only on mount
 
   return (
     <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
