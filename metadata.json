@@ -1,0 +1,6 @@
+{
+  "name": "GameFlow AI",
+  "description": "A real-time player assistant that monitors gaming activity, bankroll performance, volatility, and session trends.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

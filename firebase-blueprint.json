@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "Session": {
+      "title": "Session",
+      "description": "A gaming session record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner identifier" },
+        "startTime": { "type": "number", "description": "Start timestamp" },
+        "endTime": { "type": "number", "description": "End timestamp" },
+        "dataPoints": { 
+          "type": "array", 
+          "description": "Array of bankroll data points" 
+        }
+      },
+      "required": ["userId", "startTime", "dataPoints"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "Session",
+      "description": "User's gaming sessions"
+    }
+  }
+}
