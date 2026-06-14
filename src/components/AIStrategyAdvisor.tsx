@@ -4,61 +4,36 @@ import { useGameState } from '../GameStateContext';
 export default function AIStrategyAdvisor() {
   const { gameState } = useGameState();
   const [advice, setAdvice] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const calculateStdDev = (data: { value: number }[]) => {
+    const values = data.map(d => d.value);
+    if (values.length === 0) return 0;
+    const n = values.length;
+    const mean = values.reduce((a, b) => a + b, 0) / n;
+    return Math.sqrt(values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n);
+  };
 
   useEffect(() => {
-    const fetchAdvice = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/ai/insights', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            prompt: `
-              Analyze the following game metrics from a responsible gaming perspective:
-              - Bankroll: ${gameState.bankroll}
-              - Session P/L: ${gameState.sessionPL}
-              - Volatility: ${gameState.volatility}
-              - Current Streak: ${gameState.currentStreak}
-              - Peak Streak: ${gameState.peakStreak}
-              - Spins: ${gameState.spins}
-              
-              Provide a non-predictive, data-driven suggestion regarding stake management. 
-              Focus on responsible gaming principles (e.g., bankroll preservation, volatility management). 
-              Do not predict future outcomes. Keep it brief and actionable.
-            ` 
-          })
-        });
-        
-        if (response.status === 429) {
-          setAdvice("AI Advisor is momentarily cooling down (rate limit hit).");
-        } else if (response.ok) {
-          const data = await response.json();
-          setAdvice(data.text);
-        } else {
-          setAdvice("Unable to fetch advice at the moment.");
-        }
-      } catch (e) {
-        console.error("Advice fetch failed", e);
-        setAdvice("Failed to connect to advisor.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    const stdDev = calculateStdDev(gameState.recentBetOutcomes);
+    const recentOutcome = gameState.recentBetOutcomes.length > 0 
+      ? gameState.recentBetOutcomes[gameState.recentBetOutcomes.length - 1].value 
+      : 0;
 
-    const interval = setInterval(fetchAdvice, 15 * 60 * 1000); // 15 minutes
-    fetchAdvice();
-    return () => clearInterval(interval);
-  }, []); // Run only on mount
+    if (stdDev > 50) {
+      setAdvice("High volatility detected. Consider reducing stake size or taking a short break.");
+    } else if (recentOutcome < -100) {
+      setAdvice("Recent losses detected. Suggest reviewing your betting strategy.");
+    } else if (stdDev < 10) {
+      setAdvice("Volatility is stable. Good environment for your current strategy.");
+    } else {
+      setAdvice("Analyzing session trends...");
+    }
+  }, [gameState.recentBetOutcomes]);
 
   return (
     <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
       <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-2">AI Strategy Advisor</h2>
-      {loading ? (
-        <div className="text-xs text-gray-500 animate-pulse">Analyzing trends...</div>
-      ) : (
-        <div className="text-xs text-white leading-relaxed">{advice || "Waiting for data..."}</div>
-      )}
+      <div className="text-xs text-white leading-relaxed">{advice || "Collecting data..."}</div>
     </div>
   );
 }

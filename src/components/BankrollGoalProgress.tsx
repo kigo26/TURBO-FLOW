@@ -6,7 +6,7 @@ export default function BankrollGoalProgress() {
     const progress = Math.min(100, Math.max(0, (currentBankroll / gameState.targetBankrollGoal) * 100));
 
     return (
-        <div className="col-span-12 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
+        <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Bankroll Goal Progress</h2>
                 <span className="text-white text-xs font-mono">{progress.toFixed(1)}%</span>

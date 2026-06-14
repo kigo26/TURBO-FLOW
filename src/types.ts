@@ -56,6 +56,6 @@ export interface GameState {
   userSettings: UserSettings;
   viewMode: 'compact' | 'detailed';
   isScreenScannerVisible: boolean;
-  recentBetOutcomes: number[];
+  recentBetOutcomes: { value: number; timestamp: string }[];
   targetBankrollGoal: number;
 }

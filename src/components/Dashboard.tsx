@@ -5,12 +5,15 @@ import Settings from './Settings';
 import ScreenAnalyzer from './ScreenAnalyzer';
 import ScreenScanner from './ScreenScanner';
 import { useGameState } from '../GameStateContext';
+import { useEffect, useRef } from 'react';
 import AIStrategyAdvisor from './AIStrategyAdvisor';
 import StreakTracker from './StreakTracker';
 import StreakChart from './StreakChart';
 import QuickActionMenu from './QuickActionMenu';
 import ComparisonWidget from './ComparisonWidget';
 import BankrollGoalProgress from './BankrollGoalProgress';
+import SessionEventsList from './SessionEventsList';
+import SessionHeatmap from './SessionHeatmap';
 
 export default function Dashboard() {
   const { gameState, setGameState } = useGameState();
@@ -32,6 +35,26 @@ export default function Dashboard() {
   const stdDev = calculateStdDev(gameState.recentBetOutcomes);
   const borderColor = stdDev < 10 ? 'border-emerald-500' : stdDev < 50 ? 'border-amber-500' : 'border-red-500';
   const isHighRisk = stdDev >= 50;
+  const wasHighRisk = useRef(isHighRisk);
+
+  useEffect(() => {
+    if (isHighRisk && !wasHighRisk.current) {
+      // Play subtle audio cue
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(300, audioCtx.currentTime); 
+      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.3); // Shorter duration for subtlety
+    }
+    wasHighRisk.current = isHighRisk;
+  }, [isHighRisk]);
 
   return (
     <div className="grid grid-cols-12 gap-3 p-4">
@@ -62,7 +85,9 @@ export default function Dashboard() {
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Spins</h2>
         <div className="text-xl font-mono font-bold text-white mt-1">{gameState.spins}</div>
       </div>
-      <BankrollGoalProgress />
+      <div className="col-span-12 md:col-span-6">
+          <BankrollGoalProgress />
+      </div>
       <div className={`col-span-12 ${gameState.viewMode === 'detailed' ? 'lg:col-span-8' : 'lg:col-span-12'} border ${borderColor} ${isHighRisk ? 'animate-pulse' : ''} bg-[#0A0B14] p-4 rounded-lg`}>
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Bankroll Trend (Volatility-Adjusted)</h2>
         <SessionPlot />
@@ -78,6 +103,8 @@ export default function Dashboard() {
           <AIStrategyAdvisor />
           <StreakTracker />
           <StreakChart />
+          <SessionEventsList />
+          <SessionHeatmap />
           <ComparisonWidget />
         </div>
       )}

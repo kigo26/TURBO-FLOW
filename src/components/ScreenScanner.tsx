@@ -62,7 +62,7 @@ export default function ScreenScanner() {
         const newBankroll = parseFloat(parsedData.bankroll.replace(/[$,]/g, ''));
         const outcome = newBankroll - lastBankroll;
         
-        const newOutcomes = [...gameState.recentBetOutcomes, outcome].slice(-20); // Keep last 20
+        const newOutcomes = [...gameState.recentBetOutcomes, { value: outcome, timestamp: new Date().toLocaleTimeString() }].slice(-20); // Keep last 20
         
         setGameState({ ...parsedData, ...gameState, recentBetOutcomes: newOutcomes }); // Merge, preserve settings
       } else {
