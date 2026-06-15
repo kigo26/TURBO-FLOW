@@ -19,16 +19,24 @@ export default function AIStrategyAdvisor() {
       ? gameState.recentBetOutcomes[gameState.recentBetOutcomes.length - 1].value 
       : 0;
 
-    if (stdDev > 50) {
-      setAdvice("High volatility detected. Consider reducing stake size or taking a short break.");
-    } else if (recentOutcome < -100) {
-      setAdvice("Recent losses detected. Suggest reviewing your betting strategy.");
-    } else if (stdDev < 10) {
+    const thresholds = {
+        Conservative: { stdDev: 30, loss: -50 },
+        Balanced: { stdDev: 50, loss: -100 },
+        Aggressive: { stdDev: 80, loss: -200 }
+    };
+
+    const t = thresholds[gameState.riskTolerance];
+
+    if (stdDev > t.stdDev) {
+      setAdvice(`High volatility (${gameState.riskTolerance} mode). Consider reducing stake size or taking a break.`);
+    } else if (recentOutcome < t.loss) {
+      setAdvice("Significant recent loss detected. Suggest reviewing your strategy.");
+    } else if (stdDev < (t.stdDev / 5)) {
       setAdvice("Volatility is stable. Good environment for your current strategy.");
     } else {
       setAdvice("Analyzing session trends...");
     }
-  }, [gameState.recentBetOutcomes]);
+  }, [gameState.recentBetOutcomes, gameState.riskTolerance]);
 
   return (
     <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">

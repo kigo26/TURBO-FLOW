@@ -58,4 +58,6 @@ export interface GameState {
   isScreenScannerVisible: boolean;
   recentBetOutcomes: { value: number; timestamp: string }[];
   targetBankrollGoal: number;
+  stakeAmount: number;
+  riskTolerance: 'Conservative' | 'Balanced' | 'Aggressive';
 }

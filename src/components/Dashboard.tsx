@@ -25,11 +25,12 @@ export default function Dashboard() {
     });
   };
 
-  const calculateStdDev = (data: number[]) => {
-    if (data.length === 0) return 0;
-    const n = data.length;
-    const mean = data.reduce((a, b) => a + b, 0) / n;
-    return Math.sqrt(data.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n);
+  const calculateStdDev = (data: { value: number; timestamp: string }[]) => {
+    const values = data.map(d => d.value);
+    if (values.length === 0) return 0;
+    const n = values.length;
+    const mean = values.reduce((a, b) => a + b, 0) / n;
+    return Math.sqrt(values.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / n);
   };
 
   const stdDev = calculateStdDev(gameState.recentBetOutcomes);
@@ -80,6 +81,10 @@ export default function Dashboard() {
       <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Volatility</h2>
         <div className="text-xl font-mono font-bold text-amber-400 mt-1">{gameState.volatility}</div>
+      </div>
+      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
+        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Stake Amount</h2>
+        <div className="text-xl font-mono font-bold text-white mt-1">${gameState.stakeAmount.toFixed(2)}</div>
       </div>
       <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Spins</h2>

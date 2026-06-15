@@ -22,7 +22,9 @@ const initialState: GameState = {
   viewMode: 'detailed',
   isScreenScannerVisible: true,
   recentBetOutcomes: [],
-  targetBankrollGoal: 10000
+  targetBankrollGoal: 10000,
+  stakeAmount: 1.0,
+  riskTolerance: 'Balanced'
 };
 
 const GameStateContext = createContext<{
