@@ -10,6 +10,7 @@ export default function BankrollGoalProgress() {
             case 'EUR': return '€';
             case 'GBP': return '£';
             case 'JPY': return '¥';
+            case 'KES': return 'KShs ';
             default: return '$';
         }
     };

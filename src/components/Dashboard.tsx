@@ -5,7 +5,7 @@ import Settings from './Settings';
 import ScreenAnalyzer from './ScreenAnalyzer';
 import ScreenScanner from './ScreenScanner';
 import { useGameState } from '../GameStateContext';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AIStrategyAdvisor from './AIStrategyAdvisor';
 import StrategySimulatorModal from './StrategySimulatorModal';
 import StreakTracker from './StreakTracker';
@@ -17,6 +17,8 @@ import SessionEventsList from './SessionEventsList';
 import SessionHeatmap from './SessionHeatmap';
 import CyclePredictor from './CyclePredictor';
 import IntelligentVolatilityEngine from './IntelligentVolatilityEngine';
+import VarianceCurveChart from './VarianceCurveChart';
+import MomentumVectorGauge from './MomentumVectorGauge';
 
 import GameRulesWidget from './GameRulesWidget';
 
@@ -56,15 +58,12 @@ export default function Dashboard() {
   else if (volatilityIndex > 40) { volatilityLevel = 'Elevated'; badgeColor = 'bg-yellow-500 text-black'; }
   else if (volatilityIndex > 20) { volatilityLevel = 'Moderate'; badgeColor = 'bg-emerald-400 text-black'; }
 
-  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-     setGameState({ ...gameState, currency: e.target.value as any });
-  }
-
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
       case 'EUR': return '€';
       case 'GBP': return '£';
       case 'JPY': return '¥';
+      case 'KES': return 'KShs ';
       default: return '$';
     }
   };
@@ -92,6 +91,21 @@ export default function Dashboard() {
     wasHighRisk.current = isHighRisk;
   }, [isHighRisk]);
 
+  useEffect(() => {
+    if (gameState.isAutoOptimizeRisk) {
+      let newTolerance: 'Conservative' | 'Balanced' | 'Aggressive' = 'Balanced';
+      if (volatilityIndex > 60) {
+        newTolerance = 'Conservative';
+      } else if (volatilityIndex < 30) {
+        newTolerance = 'Aggressive';
+      }
+      
+      if (gameState.riskTolerance !== newTolerance) {
+        setGameState(prev => ({ ...prev, riskTolerance: newTolerance }));
+      }
+    }
+  }, [gameState.isAutoOptimizeRisk, volatilityIndex, gameState.riskTolerance, setGameState]);
+
   return (
     <div className="grid grid-cols-12 gap-3 p-4">
       <QuickActionMenu />
@@ -103,16 +117,6 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <select 
-            value={gameState.currency} 
-            onChange={handleCurrencyChange}
-            className="bg-[#1E293B] text-white text-xs font-bold py-2 px-3 rounded hover:bg-[#2D3A4F] border border-[#2D3A4F] outline-none"
-          >
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="GBP">GBP (£)</option>
-            <option value="JPY">JPY (¥)</option>
-          </select>
           <button 
             onClick={() => setIsSimulatorOpen(true)}
             className="bg-[#2D3A4F] text-[#00D1FF] text-xs font-bold py-2 px-4 rounded hover:bg-[#3E4C63] border border-[#00D1FF]/30"
@@ -148,12 +152,16 @@ export default function Dashboard() {
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Spins</h2>
         <div className="text-xl font-mono font-bold text-white mt-1">{gameState.spins}</div>
       </div>
-      <div className="col-span-12 md:col-span-6">
+      <div className="col-span-12 md:col-span-8">
           <BankrollGoalProgress />
       </div>
+      <MomentumVectorGauge />
       <div className="col-span-12">
         <IntelligentVolatilityEngine />
       </div>
+      
+      <VarianceCurveChart />
+
       <div className={`col-span-12 ${gameState.viewMode === 'detailed' ? 'lg:col-span-8' : 'lg:col-span-12'} border ${borderColor} ${isHighRisk ? 'animate-pulse' : ''} bg-[#0A0B14] p-4 rounded-lg`}>
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Bankroll Trend (Volatility-Adjusted)</h2>
         <SessionPlot />

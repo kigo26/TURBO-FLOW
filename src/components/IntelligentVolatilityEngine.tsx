@@ -1,5 +1,5 @@
 import { useGameState } from '../GameStateContext';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 
 export default function IntelligentVolatilityEngine() {
   const { gameState } = useGameState();
@@ -133,10 +133,39 @@ export default function IntelligentVolatilityEngine() {
       case 'EUR': return '€';
       case 'GBP': return '£';
       case 'JPY': return '¥';
+      case 'KES': return 'KShs ';
       default: return '$';
     }
   };
   const sym = getCurrencySymbol(gameState.currency);
+
+  const prevOutcomesLengthRef = useRef(outcomes.length);
+
+  useEffect(() => {
+    if (outcomes.length > prevOutcomesLengthRef.current) {
+       const customAlerts = gameState.userSettings.alertSettings.customAlerts;
+       if (customAlerts?.enabled) {
+          if (analytics.persistenceScore >= customAlerts.persistenceScore || analytics.avgSwing >= customAlerts.swingAmplitude) {
+              const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+
+              oscillator.type = 'triangle';
+              oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+              oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); 
+              gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              oscillator.start();
+              oscillator.stop(audioCtx.currentTime + 0.5);
+          }
+       }
+    }
+    prevOutcomesLengthRef.current = outcomes.length;
+  }, [outcomes.length, analytics.persistenceScore, analytics.avgSwing, gameState.userSettings.alertSettings.customAlerts]);
+
 
   return (
     <div className="border border-[#1E293B] bg-[#0A0B14]/80 backdrop-blur-md p-4 rounded-lg relative overflow-hidden">

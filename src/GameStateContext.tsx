@@ -16,7 +16,12 @@ const initialState: GameState = {
     alertSettings: {
       visualTheme: 'neon',
       soundProfile: 'subtle',
-      intensity: 70
+      intensity: 70,
+      customAlerts: {
+        persistenceScore: 80,
+        swingAmplitude: 50,
+        enabled: true
+      }
     }
   },
   viewMode: 'detailed',
@@ -24,6 +29,7 @@ const initialState: GameState = {
   recentBetOutcomes: [],
   targetBankrollGoal: 10000,
   stakeAmount: 1.0,
+  isAutoOptimizeRisk: false,
   riskTolerance: 'Balanced',
   currency: 'USD'
 };

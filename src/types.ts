@@ -18,10 +18,17 @@ export interface Session {
   dataPoints: DataPoint[]; // Simplified DataPoints for plotting
 }
 
+export interface CustomAlertThresholds {
+  persistenceScore: number;
+  swingAmplitude: number;
+  enabled: boolean;
+}
+
 export interface AlertSettings {
   visualTheme: 'neon' | 'minimalist' | 'flashing';
   soundProfile: 'subtle' | 'rising' | 'distinct';
   intensity: number; // 0-100
+  customAlerts: CustomAlertThresholds;
 }
 
 export interface UserSettings {
@@ -59,6 +66,7 @@ export interface GameState {
   recentBetOutcomes: { value: number; timestamp: string }[];
   targetBankrollGoal: number;
   stakeAmount: number;
+  isAutoOptimizeRisk: boolean;
   riskTolerance: 'Conservative' | 'Balanced' | 'Aggressive';
-  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'KES';
 }
