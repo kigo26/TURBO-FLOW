@@ -58,6 +58,57 @@ export default function Dashboard() {
   else if (volatilityIndex > 40) { volatilityLevel = 'Elevated'; badgeColor = 'bg-yellow-500 text-black'; }
   else if (volatilityIndex > 20) { volatilityLevel = 'Moderate'; badgeColor = 'bg-emerald-400 text-black'; }
 
+  const handleBankrollChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (/^[0-9.,]*$/.test(val)) {
+      setGameState({ ...gameState, bankroll: val });
+    }
+  };
+
+  const handleBankrollBlur = () => {
+    const clean = String(gameState.bankroll).replace(/[^0-9.]/g, '');
+    const num = parseFloat(clean);
+    if (!isNaN(num)) {
+      setGameState({ ...gameState, bankroll: num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) });
+    } else {
+      setGameState({ ...gameState, bankroll: '0.00' });
+    }
+  };
+
+  const handleSessionPLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (/^-?[0-9.,]*$/.test(val)) {
+      setGameState({ ...gameState, sessionPL: val });
+    }
+  };
+
+  const handleSessionPLBlur = () => {
+    const clean = String(gameState.sessionPL).replace(/[^0-9.-]/g, '');
+    const num = parseFloat(clean);
+    if (!isNaN(num)) {
+      setGameState({ ...gameState, sessionPL: num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) });
+    } else {
+      setGameState({ ...gameState, sessionPL: '0.00' });
+    }
+  };
+
+  const handleStakeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (/^[0-9.]*$/.test(val)) {
+      // Just temporarily store it as any to allow typing decimal points if needed, or handle differently.
+       setGameState({ ...gameState, stakeAmount: val as any });
+    }
+  };
+  
+  const handleStakeBlur = () => {
+    const num = parseFloat(String(gameState.stakeAmount));
+    if (!isNaN(num)) {
+      setGameState({ ...gameState, stakeAmount: num });
+    } else {
+      setGameState({ ...gameState, stakeAmount: 0 });
+    }
+  };
+
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
       case 'EUR': return '€';
@@ -132,21 +183,51 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
-        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Bankroll</h2>
-        <div className="text-xl font-mono font-bold text-white mt-1">{displayBankroll}</div>
+      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg focus-within:ring-1 focus-within:ring-[#00D1FF] transition-all">
+        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider pb-1">Bankroll</h2>
+        <div className="flex items-center text-xl font-mono font-bold">
+          <span className="text-gray-500 mr-1">{sym}</span>
+          <input 
+            type="text" 
+            value={String(gameState.bankroll).replace(/[$€£¥]/g, '')} 
+            onChange={handleBankrollChange}
+            onBlur={handleBankrollBlur}
+            className="bg-transparent text-white outline-none w-full min-w-0"
+            placeholder="0.00"
+          />
+        </div>
       </div>
-      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
-        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Session P/L</h2>
-        <div className="text-xl font-mono font-bold text-emerald-400 mt-1">{displaySessionPL}</div>
+      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg focus-within:ring-1 focus-within:ring-emerald-500 transition-all">
+        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider pb-1">Session P/L</h2>
+        <div className="flex items-center text-xl font-mono font-bold">
+          <span className="text-gray-500 mr-1">{sym}</span>
+          <input 
+            type="text" 
+            value={String(gameState.sessionPL).replace(/[$€£¥]/g, '')} 
+            onChange={handleSessionPLChange}
+            onBlur={handleSessionPLBlur}
+            className="bg-transparent text-emerald-400 outline-none w-full min-w-0"
+            placeholder="0.00"
+          />
+        </div>
       </div>
       <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Volatility</h2>
         <div className="text-xl font-mono font-bold text-amber-400 mt-1">{gameState.volatility}</div>
       </div>
-      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
-        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Stake Amount</h2>
-        <div className="text-xl font-mono font-bold text-white mt-1">{sym}{gameState.stakeAmount.toFixed(2)}</div>
+      <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg focus-within:ring-1 focus-within:ring-[#00D1FF] transition-all">
+        <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider pb-1">Stake Amount</h2>
+        <div className="flex items-center text-xl font-mono font-bold">
+          <span className="text-gray-500 mr-1">{sym}</span>
+          <input 
+            type="text"
+            value={gameState.stakeAmount || ''} 
+            onChange={handleStakeChange}
+            onBlur={handleStakeBlur}
+            className="bg-transparent text-white outline-none w-full min-w-0 appearance-none"
+            placeholder="0.00"
+          />
+        </div>
       </div>
       <div className="col-span-12 md:col-span-3 border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
         <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider">Spins</h2>

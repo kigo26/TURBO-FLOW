@@ -19,7 +19,7 @@ export default function ScreenAnalyzer() {
     }
   };
 
-  const analyzeScreen = async () => {
+  const analyzeScreen = async (type: 'dashboard' | 'all' = 'dashboard') => {
     if (!image) return;
     setLoading(true);
     setAnalysis(null);
@@ -27,7 +27,9 @@ export default function ScreenAnalyzer() {
       const [header, base64Data] = image.split(',');
       const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
       
-      const prompt = `
+      const prompt = type === 'all' 
+        ? `Extract all data, text, numbers, and statistics from the screenshot. Provide a detailed summary of everything visible on the screen.`
+        : `
 Extract the following information from the game dashboard screenshot, and output ONLY valid JSON without markdown wrapping.
 Required JSON keys and types:
 - bankroll (string, e.g., "$5,000.00")
@@ -45,24 +47,28 @@ If you cannot find a value, omit the key for that value. Return ONLY valid JSON 
       });
       const data = await response.json();
       
-      try {
-        // Attempt to parse JSON response
-        const jsonStr = data.text.replace(/^\s*```json/i, '').replace(/```\s*$/i, '').trim();
-        const extracted = JSON.parse(jsonStr);
-        
-        setGameState({
-          ...gameState,
-          ...(extracted.bankroll ? { bankroll: extracted.bankroll } : {}),
-          ...(extracted.sessionPL ? { sessionPL: extracted.sessionPL } : {}),
-          ...(extracted.volatility ? { volatility: extracted.volatility } : {}),
-          ...(extracted.stakeAmount !== undefined ? { stakeAmount: Number(extracted.stakeAmount) } : {}),
-          ...(extracted.spins !== undefined ? { spins: Number(extracted.spins) } : {}),
-        });
-        
-        setAnalysis("Success: Dashboard updated from onscreen data.");
-      } catch (parseError) {
-        // Fallback or error in extraction
-        setAnalysis(data.text);
+      if (type === 'all') {
+         setAnalysis(data.text);
+      } else {
+        try {
+          // Attempt to parse JSON response
+          const jsonStr = data.text.replace(/^\s*\`\`\`json/i, '').replace(/\`\`\`\s*$/i, '').trim();
+          const extracted = JSON.parse(jsonStr);
+          
+          setGameState({
+            ...gameState,
+            ...(extracted.bankroll ? { bankroll: extracted.bankroll } : {}),
+            ...(extracted.sessionPL ? { sessionPL: extracted.sessionPL } : {}),
+            ...(extracted.volatility ? { volatility: extracted.volatility } : {}),
+            ...(extracted.stakeAmount !== undefined ? { stakeAmount: Number(extracted.stakeAmount) } : {}),
+            ...(extracted.spins !== undefined ? { spins: Number(extracted.spins) } : {}),
+          });
+          
+          setAnalysis("Success: Dashboard updated from onscreen data.");
+        } catch (parseError) {
+          // Fallback or error in extraction
+          setAnalysis(data.text);
+        }
       }
     } catch {
       setAnalysis('Analysis failed.');
@@ -79,9 +85,16 @@ If you cannot find a value, omit the key for that value. Return ONLY valid JSON 
         {image ? 'Change Screenshot' : 'Upload Screenshot'}
       </button>
       {image && <img src={image} alt="Upload" className="max-h-32 mx-auto mb-2 rounded border border-[#1E293B]" />}
-      {image && <button onClick={analyzeScreen} disabled={loading} className="w-full bg-[#00D1FF] text-black font-bold p-2 rounded text-sm hover:bg-[#00B8E0]">
-        {loading ? 'Extract Dashboard Data' : 'Extract Dashboard Data'}
-      </button>}
+      {image && (
+        <div className="flex gap-2 mb-2">
+          <button onClick={analyzeScreen} disabled={loading} className="flex-1 bg-[#00D1FF] text-black font-bold p-2 rounded text-sm hover:bg-[#00B8E0]">
+            {loading ? 'Extracting...' : 'Extract Dashboard Data'}
+          </button>
+          <button onClick={() => analyzeScreen('all')} disabled={loading} className="flex-1 bg-purple-500 text-white font-bold p-2 rounded text-sm hover:bg-purple-600">
+            {loading ? 'Extracting...' : 'Extract All Data'}
+          </button>
+        </div>
+      )}
       {analysis && <div className="mt-4 p-2 bg-gray-800 rounded text-xs text-white italic">{analysis}</div>}
     </div>
   );
