@@ -14,13 +14,23 @@ export default function Settings() {
     });
   };
 
+  const getCurrencySymbol = (currency: string) => {
+    switch (currency) {
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      case 'JPY': return '¥';
+      default: return '$';
+    }
+  };
+  const sym = getCurrencySymbol(gameState.currency);
+
   return (
     <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
       <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Risk & Alert Settings</h2>
       
       <div className="space-y-4 mb-6">
         <div>
-          <label className="text-[9px] text-gray-500 uppercase block mb-1">Stop-Loss Limit ($)</label>
+          <label className="text-[9px] text-gray-500 uppercase block mb-1">Stop-Loss Limit ({sym})</label>
           <input 
             type="number" 
             value={userSettings.stopLossLimit} 
@@ -29,7 +39,7 @@ export default function Settings() {
           />
         </div>
         <div>
-          <label className="text-[9px] text-gray-500 uppercase block mb-1">Profit Target ($)</label>
+          <label className="text-[9px] text-gray-500 uppercase block mb-1">Profit Target ({sym})</label>
           <input 
             type="number" 
             value={userSettings.profitTarget} 

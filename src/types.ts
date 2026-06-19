@@ -60,4 +60,5 @@ export interface GameState {
   targetBankrollGoal: number;
   stakeAmount: number;
   riskTolerance: 'Conservative' | 'Balanced' | 'Aggressive';
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY';
 }

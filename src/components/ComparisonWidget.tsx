@@ -3,8 +3,8 @@ import { SessionData } from '../types';
 import ComparisonPlot from './ComparisonPlot';
 
 const MOCK_SESSIONS: SessionData[] = [
-  { id: '1', name: 'Morning Session', color: '#00D1FF', data: [{ name: '10:00', value: 5000 }, { name: '10:15', value: 5150 }, { name: '10:30', value: 4800 }] },
-  { id: '2', name: 'Afternoon Session', color: '#FF007A', data: [{ name: '10:00', value: 4500 }, { name: '10:15', value: 4600 }, { name: '10:30', value: 4900 }] },
+  { id: '1', name: 'Morning Session', color: '#00D1FF', data: [{ name: '10:00:00', value: 5000 }, { name: '10:00:30', value: 5150 }, { name: '10:01:00', value: 4800 }] },
+  { id: '2', name: 'Afternoon Session', color: '#FF007A', data: [{ name: '10:00:00', value: 4500 }, { name: '10:00:30', value: 4600 }, { name: '10:01:00', value: 4900 }] },
 ];
 
 export default function ComparisonWidget() {

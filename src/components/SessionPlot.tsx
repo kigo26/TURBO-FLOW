@@ -1,10 +1,10 @@
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 const data = [
-  { name: '10:00', value: 5000, change: 0 },
-  { name: '10:15', value: 5150, change: 150 },
-  { name: '10:30', value: 4800, change: -350 },
-  { name: '10:45', value: 5200, change: 400 },
+  { name: '10:00:00', value: 5000, change: 0 },
+  { name: '10:00:30', value: 5150, change: 150 },
+  { name: '10:01:00', value: 4800, change: -350 },
+  { name: '10:01:30', value: 5200, change: 400 },
 ];
 
 const CustomTooltip = ({ active, payload, label }: any) => {

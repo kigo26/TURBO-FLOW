@@ -47,7 +47,7 @@ export default function ScreenScanner() {
         body: JSON.stringify({ 
           image: base64Data, 
           mimeType, 
-          prompt: "Extract: balance as string (e.g. $5,000.00), sessionPL as string (e.g. +$150.00), volatility as string (e.g. HIGH/MEDIUM/LOW), spins as number. Return JSON ONLY." 
+          prompt: "Extract: bankroll as string (e.g. $5,000.00), sessionPL as string (e.g. +$150.00), volatility as string (e.g. HIGH/MEDIUM/LOW), stakeAmount as number, spins as number. Return JSON ONLY." 
         })
       });
       
@@ -56,15 +56,37 @@ export default function ScreenScanner() {
         nextScanDelay = 600000; // 10 minute backoff
       } else if (response.ok) {
         const data = await response.json();
-        const parsedData = JSON.parse(data.text.replace(/```json/g, '').replace(/```/g, ''));
         
-        const lastBankroll = parseFloat(gameState.bankroll.replace(/[$,]/g, ''));
-        const newBankroll = parseFloat(parsedData.bankroll.replace(/[$,]/g, ''));
-        const outcome = newBankroll - lastBankroll;
-        
-        const newOutcomes = [...gameState.recentBetOutcomes, { value: outcome, timestamp: new Date().toLocaleTimeString() }].slice(-20); // Keep last 20
-        
-        setGameState({ ...parsedData, ...gameState, recentBetOutcomes: newOutcomes }); // Merge, preserve settings
+        try {
+          const jsonStr = data.text.replace(/^\s*```json/i, '').replace(/```\s*$/i, '').trim();
+          const parsedData = JSON.parse(jsonStr);
+          
+          let outcome = 0;
+          if (parsedData.bankroll && gameState.bankroll) {
+            const lastBankroll = parseFloat(String(gameState.bankroll).replace(/[$,]/g, ''));
+            const newBankroll = parseFloat(String(parsedData.bankroll).replace(/[$,]/g, ''));
+            if (!isNaN(newBankroll) && !isNaN(lastBankroll)) {
+              outcome = newBankroll - lastBankroll;
+            }
+          }
+          
+          // Only add a new outcome if there is a measurable difference or we want to log the event
+          const newOutcomes = outcome !== 0 
+            ? [...gameState.recentBetOutcomes, { value: outcome, timestamp: new Date().toISOString() }].slice(-20) 
+            : gameState.recentBetOutcomes;
+          
+          setGameState(prevState => ({
+            ...prevState,
+            ...(parsedData.bankroll ? { bankroll: parsedData.bankroll } : {}),
+            ...(parsedData.sessionPL ? { sessionPL: parsedData.sessionPL } : {}),
+            ...(parsedData.volatility ? { volatility: parsedData.volatility } : {}),
+            ...(parsedData.stakeAmount !== undefined ? { stakeAmount: Number(parsedData.stakeAmount) } : {}),
+            ...(parsedData.spins !== undefined ? { spins: Number(parsedData.spins) } : {}),
+            recentBetOutcomes: newOutcomes
+          }));
+        } catch (parseError) {
+          console.error("Failed to parse extracted data:", parseError, data.text);
+        }
       } else {
         console.error("Failed to analyze screenshot", await response.text());
       }
@@ -76,8 +98,8 @@ export default function ScreenScanner() {
   };
 
   return (
-    <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
-      <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4">Live Screen Scanner</h2>
+    <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg flex flex-col items-center text-center">
+      <h2 className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-wider mb-4 text-center w-full">Live Screen Scanner</h2>
       <video ref={videoRef} autoPlay playsInline className="w-full rounded border border-[#1E293B] mb-2" />
       <button onClick={isScanning ? stopScanning : startScanning} className={`w-full ${isScanning ? 'bg-red-500' : 'bg-[#00D1FF]'} text-white font-bold p-2 rounded text-sm hover:opacity-90`}>
         {isScanning ? 'Stop Scanning' : 'Start Live Scan'}

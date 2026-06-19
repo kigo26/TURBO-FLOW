@@ -24,7 +24,8 @@ const initialState: GameState = {
   recentBetOutcomes: [],
   targetBankrollGoal: 10000,
   stakeAmount: 1.0,
-  riskTolerance: 'Balanced'
+  riskTolerance: 'Balanced',
+  currency: 'USD'
 };
 
 const GameStateContext = createContext<{

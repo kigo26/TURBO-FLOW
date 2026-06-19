@@ -5,6 +5,16 @@ export default function BankrollGoalProgress() {
     const currentBankroll = parseFloat(gameState.bankroll.replace(/[$,]/g, ''));
     const progress = Math.min(100, Math.max(0, (currentBankroll / gameState.targetBankrollGoal) * 100));
 
+    const getCurrencySymbol = (currency: string) => {
+        switch (currency) {
+            case 'EUR': return '€';
+            case 'GBP': return '£';
+            case 'JPY': return '¥';
+            default: return '$';
+        }
+    };
+    const sym = getCurrencySymbol(gameState.currency);
+
     return (
         <div className="border border-[#1E293B] bg-[#0A0B14] p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
@@ -14,7 +24,7 @@ export default function BankrollGoalProgress() {
             <div className="w-full bg-[#1E293B] rounded-full h-2.5">
                 <div className="bg-[#00D1FF] h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
             </div>
-            <p className="text-[#64748B] text-[10px] mt-2">Goal: ${gameState.targetBankrollGoal.toLocaleString()}</p>
+            <p className="text-[#64748B] text-[10px] mt-2">Goal: {sym}{gameState.targetBankrollGoal.toLocaleString()}</p>
         </div>
     );
 }
